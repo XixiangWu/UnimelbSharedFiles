@@ -172,22 +172,66 @@ function merge(arr, A, B, start)
 ```
 
 
-Knapsack
+Knapsack (TODO:come back)
 =====
 
 Two variant:
 
-- amount of items is **infinite** 
-- amount of items is **finite** 
+- amount of items is **infinite** (in this course, means **with repetition**) 
+- amount of items is **finite** (in this course, means **without repetition**)
 
-naive way is bruce-force. But we can use dynamic programming to speed it up.
+
+naive way is recursive. But we can use dynamic programming to speed it up.
 
 Time complexity: 
 
-- Bruce-force
-    $O()$
+- Naive
+    $O(??)$
 - Dynamic programming
-    $O(nw)$
+    $O(nW)$
+
+Dynamic programming implementation
+-----
+
+### With repetition
+
+Space complexity: $O(W)$
+
+```pseudocode
+function knapsack(w, v)
+
+    input: w - the weight of items, v - the value of items
+
+    max_V = an array having all element initialized to 0
+
+    for curr_w in 1 to W
+
+        max_V[curr_w] = max{max_V[curr_w - w[i]] + v[i]} for i in [1,n]
+
+    return max_V[W]
+```
+
+
+### Without repetition
+
+Space Complexity: $O(W)$ since this algorithm only needs to keep two immediate rows
+
+
+```pseudocode
+function knapsack(w, v)
+
+    input: w - the weight of items, v - the value of items
+
+    max_V = an array having all element initialized to 0
+
+    for j in 1 to w.length
+        for curr_w in 1 to W
+
+            max_V[curr_w, j] = max{max_V[curr_w - w[j], j-1] + v[j], max_V[w, j-1]}
+
+    return max_V[W, w.length]
+
+```
 
 
 
@@ -692,12 +736,13 @@ properties
 - Any connected, undirected graph with |E| = |V| - 1 is a tree
 - An undirected graph is a tree $\iff$ there's a **unique path between any pair of nodes**
 
+
 Minimum Spanning Tree
 =====
 
 A tree constructed from a graph by deleting unnecessary edges such that the connectedness of the graph remains the same but the sum of edge lengths reached minimum
 
-Kruskal's Algorithm
+Kruskal's Algorithm (TODO)
 -----
 
 Without path compression, time complexity: $O(Elog(V))$ (??? why not O(E*V))
@@ -723,7 +768,7 @@ function kruskal(V, E)
 ```
 
 
-Prim's Algorithm (TODO: come back later)
+Prim's Algorithm
 -----
 
 Time complexity: $O((V+E)log(V))$
@@ -932,12 +977,20 @@ Symmetrical VS Asymmetrical
 Symmetrical
 
 - encrypt and decrypt using the *same key*
+<<<<<<< HEAD
 	+ AES-256
+=======
+- e.g. AES-256
+>>>>>>> yxliang01/master
 
 Asymmetrical
 
 - encrypt and decrypt using *different key*
+<<<<<<< HEAD
 	+ RSA
+=======
+- e.g. RSA
+>>>>>>> yxliang01/master
 
 
 Trapdoor function
@@ -1100,17 +1153,95 @@ function huffman_lens(s)
 
 ### Alistair Moffat's Implementation
 
-time complexity: $O(n)$
+Five important elements
 
-(TODO)
+- leaf node
+- internal nodes
+    + once there is one created, internal nodes will *never die out*
+- internal parent nodes 
+- internal depths
+- leaf depths
+
+(CHECK NEEDED)
 ```pseudocode
-function alistair_huffman(arr, F)
+function alistair_huffman(F)
 
-    input: F - frequency count of symbols in arr, arr - array of symbols
-    output: the length of codeword for each symbol
+    input: F - frequency count of symbols in array (not taken as an argument), the array must be presorted in ascending order of the frequencies  
+    output: an array of the lengths of codewords for each symbol in F
 
+    //phase1
+
+    idx_leaf = 0
+    idx_internal = -1
+    idx_next_internal = -1
+
+    num = an array of size 2
+
+    while idx_next_internal < F.length - 1
+
+        idx_next_internal++
+
+        for i in [0,1]
+
+            if idx_internal == idx_parent or (idx_leaf != F.length and F[idx_leaf] < F[idx_internal])
+                
+                num[i] = F[idx_leaf]
+                idx_leaf++
+            else
+
+                num[i] = F[idx_internal]
+                F[idx_internal] = idx_next_internal
+                idx_internal++
+
+
+        F[idx_next_internal] = num[0] + num[1]
+
+    // Phase 2
+
+    F[F.length - 2] = 0
+
+    for i from F.length - 3 to 0
     
+        F[i] = F[F[i]] + 1
 
+
+    // Phase 3
+
+    last = F[F.length - 2]
+    count_last = 1
+    count_last_parent = 0
+
+    idx_next = F.length - 1
+
+    for i from F.length - 3 to 0    
+
+        if F[i] != last
+            max_ava = 2 * count_last_parent
+            repeat (max_ava - count_last) times //could be 0 times
+                if idx_next < 0
+                    return F
+                F[idx_next] = last
+                idx_next--
+            last = F[i]
+            count_last_parent = count_last
+            count_last = 1
+        else
+            count_last++
+
+    max_ava = 2 * count_last_parent
+    repeat (max_ava - count_last) times
+        if idx_next < 0
+            return F
+        F[idx_next] = last
+        idx_next--
+
+    //hmm still got some symbols not assigned
+    max_ava = 2 * last
+    repeat (max_ava - count_last) times
+        if idx_next < 0
+            return F
+        F[idx_next] = last + 1
+        idx_next--
 
 ```
 
@@ -1168,6 +1299,8 @@ Dynamic Programming
 It's particularly useful when an algorithm needs the results of sub-problems for ****multiple times****.
 
 It's a technique used to speed up calculations when there are lots of *redundant calculations*. We memorize the result of each calculation for the sub-problems, then use the memorized result when we have to need 
+
+As a result, a main question is *What are the subproblems?*.
 
 
 Fibonacci
@@ -1494,7 +1627,7 @@ $N$ = the number of items counted
 $p = ceil(e/\epsilon)$
 $d = ceil(\log_e \frac{1}{\delta})$
 It's guaranteed that after seeing $N$ items with probability $1-\delta$:
-$$f_i \ge \cap {f_i} \ge f_i + \epsilon N$$
+$$f_i \ge \hat {f_i} \ge f_i + \epsilon N$$
 
 ### Complexity
 
@@ -1634,10 +1767,9 @@ Algorithms
 - Cryptography
     + [X] RSA
 - Compression
-    + [] Huffman coding
+    + [X] Huffman coding
 - knapsack
-    + [] brute-force
-    + [] dynamic programming
+    + [X] dynamic programming
 - [X] K-th smallest algorithm
 - [X] Set Cardinality
 - [X] Frequency estimation
